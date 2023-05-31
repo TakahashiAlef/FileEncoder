@@ -20,8 +20,8 @@
             Dim OutDir As String = System.Environment.CurrentDirectory & "\"
             Dim FileName As String = li.Text & ".txt"
 
-            Using ws As IO.StreamWriter = New IO.StreamWriter(OutDir & FileName, False, System.Text.Encoding.GetEncoding("utf-8"))
-                ws.WriteLine(Base64String)
+            Using ws As IO.StreamWriter = New IO.StreamWriter(OutDir & FileName, False)
+                ws.Write(Base64String)
             End Using
             cnt += 1
         Next
@@ -36,18 +36,19 @@
     ''' <param name="strFileFullPath"></param>
     ''' <returns></returns>
     Private Function Base64Encode(ByVal strFileFullPath As String) As String
-        Dim fi As New IO.FileInfo(strFileFullPath)
-        Dim fs As IO.FileStream = fi.OpenRead()
-        Dim nBytes As Integer = CInt(fi.Length)
-        Dim ByteArray(nBytes) As Byte
-        fs.Read(ByteArray, 0, nBytes)
+        'Base64で文字列に変換するファイル
+        Dim inFile As System.IO.FileStream
+        Dim bs() As Byte
 
-        'Base64文字列に変換
+        'ファイルをbyte型配列としてすべて読み込む
+        inFile = New IO.FileStream(strFileFullPath, IO.FileMode.Open, IO.FileAccess.Read)
+        ReDim bs(inFile.Length - 1)
+        Dim readBytes As Long = inFile.Read(bs, 0, inFile.Length)
+        inFile.Close()
+        inFile.Dispose()
+
         Dim base64String As String
-        base64String = System.Convert.ToBase64String(ByteArray)
-
-        fs.Dispose()
-        fi = Nothing
+        base64String = System.Convert.ToBase64String(bs)
 
         Return base64String
 
@@ -74,7 +75,7 @@
 
             Dim FilePath As String = li.Tag.ToString
             Dim Base64String As String
-            Using sr As New IO.StreamReader(FilePath, System.Text.Encoding.GetEncoding("utf-8"))
+            Using sr As New IO.StreamReader(FilePath)
                 Base64String = sr.ReadToEnd
             End Using
 
